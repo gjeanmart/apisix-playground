@@ -1,0 +1,50 @@
+services:
+  etcd:
+    image: bitnami/etcd:latest
+    container_name: etcd
+    environment:
+      - ALLOW_NONE_AUTHENTICATION=yes
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+    ports:
+      - "2379:2379"
+    volumes:
+      - ./.data/etcd:/bitnami/etcd
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./.data/redis:/data
+
+  apisix:
+    image: apache/apisix:3.12.0-debian
+    container_name: apisix
+    depends_on:
+      - etcd
+      - redis
+    volumes:
+      - ./api.config.yaml:/usr/local/apisix/conf/config.yaml
+      - ./api.apisix.yaml:/usr/local/apisix/conf/apisix.yaml
+    ports:
+      - "9080:9080" # HTTP
+      - "9180:9180" # Admin API
+    restart: always
+
+  dashboard:
+    image: apache/apisix-dashboard:3.0.1-alpine
+    container_name: apisix-dashboard
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./dashboard.config.yaml:/usr/local/apisix-dashboard/conf/conf.yaml
+    depends_on:
+      - apisix
+
+  httpbin:
+    image: kennethreitz/httpbin
+    container_name: httpbin
+    ports:
+      - "8080:80"

@@ -1,0 +1,27 @@
+# dashboard.config.yaml
+---
+conf:
+  listen:
+    host: 0.0.0.0
+    port: 9000 # The port on which the `Manager API` should listen.
+
+  # allow_list: # If we don't set any IP list, then any IP access is allowed by default.
+  #   - 0.0.0.0/0
+
+  etcd:
+    endpoints: # supports defining multiple etcd host addresses for an etcd cluster
+      - http://etcd:2379
+
+authentication:
+  secret:
+    secret # secret for jwt token generation.
+    # NOTE: Highly recommended to modify this value to protect `manager api`.
+    # if it's default value, when `manager api` start, it will generate a random string to replace it.
+  expire_time: 3600 # jwt token expire time, in second
+  users: # yamllint enable rule:comments-indentation
+    - username: admin # username and password for login `manager api`
+      password: admin
+    - username: user
+      password: user
+---
+
