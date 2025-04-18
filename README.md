@@ -56,7 +56,7 @@ We’ll start by routing requests to the `httpbin` upstream.
 ```shell
 $ curl http://127.0.0.1:9180/apisix/admin/routes/1 -H "X-API-KEY: $ADMIN_KEY" -X PUT -i -d '
 {
-    "name": "httbin-route",
+    "name": "httpbin-route",
     "uri": "/httpbin/*",
     "upstream": {
         "type": "roundrobin",
@@ -125,9 +125,9 @@ $ curl http://127.0.0.1:9180/apisix/admin/consumer_groups/basic_plan -H "X-API-K
 {
     "plugins": {
         "limit-req": {
-            "rate": 1,
+            "rate": 1, # max request per second
             "burst": 0,
-            "key": "consumer_name",
+            "key": "consumer_name",  # restrict by consumer/api-key
             "rejected_code": 429
         }
     }
@@ -141,9 +141,9 @@ $ curl http://127.0.0.1:9180/apisix/admin/consumer_groups/premium_plan -H "X-API
 {
     "plugins": {
         "limit-req": {
-            "rate": 10,
+            "rate": 10, # max request per second
             "burst": 0,
-            "key": "consumer_name",
+            "key": "consumer_name", # restrict by consumer/api-key
             "rejected_code": 429
         }
     }
@@ -282,8 +282,8 @@ $ curl http://127.0.0.1:9180/apisix/admin/consumer_groups/basic_plan -H "X-API-K
         },
         "limit-count": {
             "count": 10,
-            "time_window": 2592000,
-            "key": "consumer_name",
+            "time_window": 2592000, # 1 month
+            "key": "consumer_name", # restrict by consumer/api-key
             "policy": "redis",
             "redis_host": "redis",
             "redis_port": 6379,
@@ -307,8 +307,8 @@ $ curl http://127.0.0.1:9180/apisix/admin/consumer_groups/premium_plan -H "X-API
         },
         "limit-count": {
             "count": 10000,
-            "time_window": 2592000,
-            "key": "consumer_name",
+            "time_window": 2592000, # 1 month
+            "key": "consumer_name", # restrict by consumer/api-key
             "policy": "redis",
             "redis_host": "redis",
             "redis_port": 6379,
