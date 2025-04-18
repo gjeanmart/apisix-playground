@@ -11,19 +11,35 @@
 
 ### Getting started
 
+1. **Start the Services**
+
+Run the project:
+
 ```shell
 docker compose up
 ```
 
-Go to http://localhost:9000
+This will start:
 
-Export your API Admin key (find it in `api.apisix.yaml` -> `deployment.admin.admin_key`)
+- `etcd` Key-Value store used by APISX
+- `apisix` The API Gateway
+- `apisix-dashboard:` Web UI to manage APISIX
+- `httpbin` Sample HTTP service
+- `redis` Used for rate limiting with persistence
+
+=> Access the dashboard at: http://localhost:9000 (admin/admin)
+
+2. **Export your API Admin key**
+
+Find the Admin API key in `api.config.yaml` under `deployment.admin.admin_key`, and export it:
 
 ```shell
 export ADMIN_KEY=adminkey
 ```
 
 #### Configure Upstream and route
+
+We’ll start by routing requests to the `httpbin` upstream.
 
 **Via UI**
 
@@ -55,38 +71,39 @@ curl http://127.0.0.1:9180/apisix/admin/routes/1 -H "X-API-KEY: $ADMIN_KEY" -X P
 <TODO>
 
 **Testing**
-Try out to reach the service through the API Gateway
+Test the Route
 
 ```shell
 curl http://localhost:9080/httpbin/ip  -i
 HTTP/1.1 200 OK
-Content-Type: application/json
-Content-Length: 31
-Connection: keep-alive
-Date: Fri, 18 Apr 2025 10:07:45 GMT
-Access-Control-Allow-Origin: *
-Access-Control-Allow-Credentials: true
-Server: APISIX/3.12.0
 
 {
   "origin": "192.168.65.1"
 }
 ```
 
-#### Configure API Authentication with per-second rate limits
+#### API Key Auth + Rate Limiting
 
-- key-auth: https://apisix.apache.org/docs/apisix/plugins/key-auth/
-- limit-req: https://apisix.apache.org/docs/apisix/plugins/limit-req/
+We’ll now enable API key-based authentication and configure rate limits based on consumer groups: `basic` and `premium`.
+
+We will be using the following plugins
+
+- `key-auth`: https://apisix.apache.org/docs/apisix/plugins/key-auth/
+- `limit-req`: https://apisix.apache.org/docs/apisix/plugins/limit-req/
 
 ##### Consumer groups
 
+First we create Consumer Groups for each plan (basic and premium) using the plugin `limit-req`
+
 **Via UI**
 
-No possible
+Not possible
 
 **Via Admin API**
 
-Create a **Basic Plan** limited to 1 request per secod
+We'll define two plans with different rate limits:
+
+Basic Plan (1 request/second)
 
 ```shell
 curl http://127.0.0.1:9180/apisix/admin/consumer_groups/basic_plan -H "X-API-KEY: $ADMIN_KEY" -X PUT -d '
@@ -102,7 +119,7 @@ curl http://127.0.0.1:9180/apisix/admin/consumer_groups/basic_plan -H "X-API-KEY
 }'
 ```
 
-Create a **Premium Plan** limited to 200 requests per minute
+Premium Plan (10 requests/second)
 
 ```shell
 curl http://127.0.0.1:9180/apisix/admin/consumer_groups/premium_plan -H "X-API-KEY: $ADMIN_KEY" -X PUT -d '
@@ -123,6 +140,8 @@ curl http://127.0.0.1:9180/apisix/admin/consumer_groups/premium_plan -H "X-API-K
 <TODO>
 
 ##### Consumers
+
+Let's create two consumers, one for each consumer group/plan leveraging `key-auth` plugin
 
 **Via UI**
 
@@ -162,6 +181,8 @@ curl http://127.0.0.1:9180/apisix/admin/consumers -H "X-API-KEY: $ADMIN_KEY" -X 
 
 ##### Update the route
 
+Finally, let's update Route to enable Auth
+
 ```shell
 curl http://127.0.0.1:9180/apisix/admin/routes/1 -H "X-API-KEY: $ADMIN_KEY" -X PUT -i -d '
 {
@@ -183,16 +204,11 @@ curl http://127.0.0.1:9180/apisix/admin/routes/1 -H "X-API-KEY: $ADMIN_KEY" -X P
 ```
 
 **Testing**
-Try out to reach the service through the API Gateway
+Try reaching out the service through the API Gateway
 
 ```shell
 curl http://localhost:9080/httpbin/ip  -i
 HTTP/1.1 401 Unauthorized
-Date: Fri, 18 Apr 2025 12:35:08 GMT
-Content-Type: text/plain; charset=utf-8
-Transfer-Encoding: chunked
-Connection: keep-alive
-Server: APISIX/3.12.0
 
 {"message":"Missing API key in request"}
 ```
@@ -200,13 +216,6 @@ Server: APISIX/3.12.0
 ```shell
 curl http://localhost:9080/httpbin/ip  -i -H 'apikey: apikey1'
 HTTP/1.1 200 OK
-Content-Type: application/json
-Content-Length: 31
-Connection: keep-alive
-Date: Fri, 18 Apr 2025 12:51:47 GMT
-Access-Control-Allow-Origin: *
-Access-Control-Allow-Credentials: true
-Server: APISIX/3.12.0
 
 {
   "origin": "192.168.65.1"
@@ -216,11 +225,6 @@ Server: APISIX/3.12.0
 ```shell
 sandbox curl http://localhost:9080/httpbin/ip  -i -H 'apikey: apikey1'
 HTTP/1.1 429 Too Many Requests
-Date: Fri, 18 Apr 2025 12:51:48 GMT
-Content-Type: text/html; charset=utf-8
-Content-Length: 241
-Connection: keep-alive
-Server: APISIX/3.12.0
 
 <html>
 <head><title>429 Too Many Requests</title></head>
@@ -231,9 +235,9 @@ Server: APISIX/3.12.0
 </html>
 ```
 
-#### Configure API Authentication with long-live rate limits
+#### CConfigure API Authentication with Long-Lived Rate Limits
 
-- limit-count: https://apisix.apache.org/docs/apisix/plugins/limit-count/
+We'll now enforce monthly quotas using `limit-count` (https://apisix.apache.org/docs/apisix/plugins/limit-count/)
 
 **Via UI**
 
@@ -241,7 +245,7 @@ No possible
 
 **Via Admin API**
 
-Update the **Basic Plan** limited to 10 request per month
+Update the **Basic Plan** to 10 requests per month:
 
 ```shell
 curl http://127.0.0.1:9180/apisix/admin/consumer_groups/basic_plan -H "X-API-KEY: $ADMIN_KEY" -X PUT -d '
@@ -266,7 +270,7 @@ curl http://127.0.0.1:9180/apisix/admin/consumer_groups/basic_plan -H "X-API-KEY
 }'
 ```
 
-Update the **Basic Plan** limited to 10000 request per month
+Update the **Premium Plan** limited to 10000 request per month
 
 ```shell
 curl http://127.0.0.1:9180/apisix/admin/consumer_groups/premium_plan -H "X-API-KEY: $ADMIN_KEY" -X PUT -d '
@@ -299,43 +303,19 @@ curl http://127.0.0.1:9180/apisix/admin/consumer_groups/premium_plan -H "X-API-K
 Try out to reach the service through the API Gateway
 
 ```shell
-curl http://localhost:9080/httpbin/ip  -i
-HTTP/1.1 401 Unauthorized
-Date: Fri, 18 Apr 2025 12:35:08 GMT
-Content-Type: text/plain; charset=utf-8
-Transfer-Encoding: chunked
-Connection: keep-alive
-Server: APISIX/3.12.0
-
-{"message":"Missing API key in request"}
-```
-
-```shell
 curl http://localhost:9080/httpbin/ip  -i -H 'apikey: apikey1'
 HTTP/1.1 200 OK
-Content-Type: application/json
-Content-Length: 31
-Connection: keep-alive
-Date: Fri, 18 Apr 2025 12:51:47 GMT
-Access-Control-Allow-Origin: *
-Access-Control-Allow-Credentials: true
-Server: APISIX/3.12.0
 
 {
   "origin": "192.168.65.1"
 }
 ```
 
-x10
+After exceeding monthly quota (x10):
 
 ```shell
 sandbox curl http://localhost:9080/httpbin/ip  -i -H 'apikey: apikey1'
 HTTP/1.1 429 Too Many Requests
-Date: Fri, 18 Apr 2025 12:51:48 GMT
-Content-Type: text/html; charset=utf-8
-Content-Length: 241
-Connection: keep-alive
-Server: APISIX/3.12.0
 
 <html>
 <head><title>429 Too Many Requests</title></head>

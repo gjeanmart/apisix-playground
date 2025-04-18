@@ -33,7 +33,7 @@ services:
       - "9180:9180" # Admin API
     restart: always
 
-  dashboard:
+  apisix-dashboard:
     image: apache/apisix-dashboard:3.0.1-alpine
     container_name: apisix-dashboard
     ports:
@@ -43,6 +43,7 @@ services:
     depends_on:
       - apisix
 
+  ## Sample Service
   httpbin:
     image: kennethreitz/httpbin
     container_name: httpbin
