@@ -17,9 +17,9 @@ deployment:
       - name: admin # admin: write access to configurations.
         key: "adminkey" #  API key for the admin of Admin API.
         role: admin
-      - name: viewer # viewer: read access to configurations.
-        key: "viewerkey" # API key for the viewer of Admin API.
-        role: viewer
+      # - name: viewer # viewer: read access to configurations.
+      #   key: "viewerkey" # API key for the viewer of Admin API.
+      #   role: viewer
     admin_listen: # Admin API listening addresses.
       ip: 0.0.0.0 # Admin API listening IP.
       port: 9180 # Admin API listening port. Beware of port conflict with node_listen.

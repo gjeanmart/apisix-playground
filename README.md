@@ -84,7 +84,7 @@ $ curl http://127.0.0.1:9180/apisix/admin/routes/1 -H "X-API-KEY: $ADMIN_KEY" -X
 
 **Via ACD**
 
-TBC
+_To Be Defined_
 
 **Testing**
 
@@ -162,7 +162,7 @@ $ curl http://127.0.0.1:9180/apisix/admin/consumer_groups/premium_plan -H "X-API
 
 **Via ACD**
 
-<TODO>
+_To Be Defined_
 
 ### Create Consumers
 
@@ -202,7 +202,7 @@ $ curl http://127.0.0.1:9180/apisix/admin/consumers -H "X-API-KEY: $ADMIN_KEY" -
 
 **Via ACD**
 
-TBC
+_To Be Defined_
 
 ### Update the Route
 
@@ -330,7 +330,7 @@ $ curl http://127.0.0.1:9180/apisix/admin/consumer_groups/premium_plan -H "X-API
 
 **Via ACD**
 
-TBC
+_To Be Defined_
 
 **Testing**
 Try out to reach the service through the API Gateway

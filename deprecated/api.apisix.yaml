@@ -1,8 +1,0 @@
-## api.apisix.yaml
-routes:
-  - uri: "/httpbin/*"
-    upstream:
-      nodes:
-        "httpbin:80": 1
-      type: roundrobin
-#END
