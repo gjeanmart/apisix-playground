@@ -6,7 +6,7 @@
 - Docker Compose
 - ACD
   ```shell
-  curl -sL "https://run.api7.ai/adc/install" | sh
+  $ curl -sL "https://run.api7.ai/adc/install" | sh
   ```
 
 ## Getting started
@@ -37,7 +37,7 @@ Find the Admin API key in `api.config.yaml` under `deployment.admin.admin_key`, 
 export ADMIN_KEY=adminkey
 ```
 
-### Configure Upstream and route
+## Configure Upstream and route
 
 We’ll start by routing requests to the `httpbin` upstream.
 
@@ -54,7 +54,7 @@ We’ll start by routing requests to the `httpbin` upstream.
 **Via Admin API**
 
 ```shell
-curl http://127.0.0.1:9180/apisix/admin/routes/1 -H "X-API-KEY: $ADMIN_KEY" -X PUT -i -d '
+$ curl http://127.0.0.1:9180/apisix/admin/routes/1 -H "X-API-KEY: $ADMIN_KEY" -X PUT -i -d '
 {
     "name": "httbin-route",
     "uri": "/httpbin/*",
@@ -77,15 +77,16 @@ curl http://127.0.0.1:9180/apisix/admin/routes/1 -H "X-API-KEY: $ADMIN_KEY" -X P
 TBC
 
 **Testing**
+
 Test the Route
 
 ```shell
-curl http://localhost:9080/httpbin/ip  -i
+$ curl http://localhost:9080/httpbin/ip  -i
 HTTP/1.1 200 OK
 { "origin": "192.168.65.1" }
 ```
 
-### API Key Auth + Rate Limiting
+## API Key Auth + Rate Limiting
 
 We’ll now enable API key-based authentication and configure rate limits based on consumer groups: `basic` and `premium`.
 
@@ -94,7 +95,7 @@ We will be using the following plugins
 - `key-auth`: https://apisix.apache.org/docs/apisix/plugins/key-auth/
 - `limit-req`: https://apisix.apache.org/docs/apisix/plugins/limit-req/
 
-#### Consumer groups
+### Create Consumer Groups
 
 First we create Consumer Groups for each plan (basic and premium) using the plugin `limit-req`
 
@@ -109,7 +110,7 @@ We'll define two plans with different rate limits:
 Basic Plan (1 request/second)
 
 ```shell
-curl http://127.0.0.1:9180/apisix/admin/consumer_groups/basic_plan -H "X-API-KEY: $ADMIN_KEY" -X PUT -d '
+$ curl http://127.0.0.1:9180/apisix/admin/consumer_groups/basic_plan -H "X-API-KEY: $ADMIN_KEY" -X PUT -d '
 {
     "plugins": {
         "limit-req": {
@@ -125,7 +126,7 @@ curl http://127.0.0.1:9180/apisix/admin/consumer_groups/basic_plan -H "X-API-KEY
 Premium Plan (10 requests/second)
 
 ```shell
-curl http://127.0.0.1:9180/apisix/admin/consumer_groups/premium_plan -H "X-API-KEY: $ADMIN_KEY" -X PUT -d '
+$ curl http://127.0.0.1:9180/apisix/admin/consumer_groups/premium_plan -H "X-API-KEY: $ADMIN_KEY" -X PUT -d '
 {
     "plugins": {
         "limit-req": {
@@ -142,7 +143,7 @@ curl http://127.0.0.1:9180/apisix/admin/consumer_groups/premium_plan -H "X-API-K
 
 <TODO>
 
-#### Consumers
+### Create Consumers
 
 Let's create two consumers, one for each consumer group/plan leveraging `key-auth` plugin
 
@@ -153,7 +154,7 @@ Not possible with plugins/group_id
 **Via Admin API**
 
 ```shell
-curl http://127.0.0.1:9180/apisix/admin/consumers -H "X-API-KEY: $ADMIN_KEY" -X PUT -d '
+$ curl http://127.0.0.1:9180/apisix/admin/consumers -H "X-API-KEY: $ADMIN_KEY" -X PUT -d '
 {
     "username": "consumer1",
     "plugins": {
@@ -166,7 +167,7 @@ curl http://127.0.0.1:9180/apisix/admin/consumers -H "X-API-KEY: $ADMIN_KEY" -X 
 ```
 
 ```shell
-curl http://127.0.0.1:9180/apisix/admin/consumers -H "X-API-KEY: $ADMIN_KEY" -X PUT -d '
+$ curl http://127.0.0.1:9180/apisix/admin/consumers -H "X-API-KEY: $ADMIN_KEY" -X PUT -d '
 {
     "username": "consumer2",
     "plugins": {
@@ -182,12 +183,12 @@ curl http://127.0.0.1:9180/apisix/admin/consumers -H "X-API-KEY: $ADMIN_KEY" -X 
 
 TBC
 
-#### Update the Route
+### Update the Route
 
 Finally, let's update Route to enable Auth
 
 ```shell
-curl http://127.0.0.1:9180/apisix/admin/routes/1 -H "X-API-KEY: $ADMIN_KEY" -X PUT -i -d '
+$ curl http://127.0.0.1:9180/apisix/admin/routes/1 -H "X-API-KEY: $ADMIN_KEY" -X PUT -i -d '
 {
     "name": "httbin-route",
     "uri": "/httpbin/*",
@@ -207,22 +208,23 @@ curl http://127.0.0.1:9180/apisix/admin/routes/1 -H "X-API-KEY: $ADMIN_KEY" -X P
 ```
 
 **Testing**
+
 Try reaching out the service through the API Gateway
 
 ```shell
-curl http://localhost:9080/httpbin/ip  -i
+$ curl http://localhost:9080/httpbin/ip  -i
 HTTP/1.1 401 Unauthorized
 {"message":"Missing API key in request"}
 ```
 
 ```shell
-curl http://localhost:9080/httpbin/ip  -i -H 'apikey: apikey1'
+$ curl http://localhost:9080/httpbin/ip  -i -H 'apikey: apikey1'
 HTTP/1.1 200 OK
 {"origin": "192.168.65.1"}
 ```
 
 ```shell
-curl http://localhost:9080/httpbin/ip  -i -H 'apikey: apikey1'
+$ curl http://localhost:9080/httpbin/ip  -i -H 'apikey: apikey1'
 HTTP/1.1 429 Too Many Requests
 <html>
 <head><title>429 Too Many Requests</title></head>
@@ -233,7 +235,7 @@ HTTP/1.1 429 Too Many Requests
 </html>
 ```
 
-### Configure API Authentication with Long-Lived Rate Limits
+## Configure API Authentication with Long-Lived Rate Limits
 
 We'll now enforce monthly quotas using `limit-count` (https://apisix.apache.org/docs/apisix/plugins/limit-count/)
 
@@ -246,7 +248,7 @@ Not possible
 Update the **Basic Plan** to 10 requests per month:
 
 ```shell
-curl http://127.0.0.1:9180/apisix/admin/consumer_groups/basic_plan -H "X-API-KEY: $ADMIN_KEY" -X PUT -d '
+$ curl http://127.0.0.1:9180/apisix/admin/consumer_groups/basic_plan -H "X-API-KEY: $ADMIN_KEY" -X PUT -d '
 {
     "plugins": {
         "limit-req": {
@@ -271,7 +273,7 @@ curl http://127.0.0.1:9180/apisix/admin/consumer_groups/basic_plan -H "X-API-KEY
 Update the **Premium Plan** limited to 10000 request per month
 
 ```shell
-curl http://127.0.0.1:9180/apisix/admin/consumer_groups/premium_plan -H "X-API-KEY: $ADMIN_KEY" -X PUT -d '
+$ curl http://127.0.0.1:9180/apisix/admin/consumer_groups/premium_plan -H "X-API-KEY: $ADMIN_KEY" -X PUT -d '
 {
     "plugins": {
         "limit-req": {
@@ -301,7 +303,7 @@ TBC
 Try out to reach the service through the API Gateway
 
 ```shell
-curl http://localhost:9080/httpbin/ip  -i -H 'apikey: apikey1'
+$ curl http://localhost:9080/httpbin/ip  -i -H 'apikey: apikey1'
 HTTP/1.1 200 OK
 {"origin": "192.168.65.1"}
 ```
@@ -309,7 +311,7 @@ HTTP/1.1 200 OK
 After exceeding monthly quota (x10):
 
 ```shell
-sandbox curl http://localhost:9080/httpbin/ip  -i -H 'apikey: apikey1'
+$ curl http://localhost:9080/httpbin/ip  -i -H 'apikey: apikey1'
 HTTP/1.1 429 Too Many Requests
 <html>
 <head><title>429 Too Many Requests</title></head>
@@ -319,3 +321,7 @@ HTTP/1.1 429 Too Many Requests
 <p><em>Powered by <a href="https://apisix.apache.org/">APISIX</a>.</em></p></body>
 </html>
 ```
+
+## Metrics
+
+TBC
