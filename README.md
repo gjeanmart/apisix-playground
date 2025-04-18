@@ -1,4 +1,4 @@
-# APISIX Exploration
+# APISIX Playground
 
 ## Requirements
 
@@ -16,7 +16,7 @@
 Run the project:
 
 ```shell
-docker compose up
+$ docker compose up
 ```
 
 This will start:
@@ -26,8 +26,9 @@ This will start:
 - `apisix-dashboard:` Web UI to manage APISIX
 - `httpbin` Sample HTTP service
 - `redis` Used for rate limiting with persistence
+- `prometheus` Used for metrics collection
 
-=> Access the dashboard at: http://localhost:9000 (admin/admin)
+➡️ Access the dashboard at: http://localhost:9000 (admin/admin)
 
 2. **Export your API Admin key**
 
@@ -35,6 +36,15 @@ Find the Admin API key in `api.config.yaml` under `deployment.admin.admin_key`, 
 
 ```shell
 export ADMIN_KEY=adminkey
+```
+
+### Enable necessary plugins
+
+In your APISIX config (`api.config.yaml`), enable the following plugins:
+
+```yaml
+plugins:
+  - proxy-rewrite
 ```
 
 ## Configure Upstream and route
@@ -97,7 +107,7 @@ We will be using the following plugins
 
 ### Enable necessary plugins
 
-In your APISIX config, enable the following plugins:
+In your APISIX config (`api.config.yaml`), enable the following plugins:
 
 ```yaml
 plugins:
@@ -252,7 +262,7 @@ We'll now enforce monthly quotas using `limit-count` (https://apisix.apache.org/
 
 ### Enable necessary plugins
 
-In your APISIX config, enable the following plugins:
+In your APISIX config (`api.config.yaml`), enable the following plugins:
 
 ```yaml
 plugins:
