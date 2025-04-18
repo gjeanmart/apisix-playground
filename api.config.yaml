@@ -30,11 +30,19 @@ deployment:
     host: # etcd address(es) in the same etcd cluster.
       - http://etcd:2379
 
-## Plugins
-# plugin_attr:
-#   limit-count:
-#     redis:
-#       host: "redis"
-#       port: 6379
+## Plugins (enables only the necessary plugins)
+plugins:
+  - proxy-rewrite
+  - limit-req
+  - limit-count
+  - key-auth
+  - prometheus
+
+## Plugin Configurations
+plugin_attr:
+  prometheus:
+    export_addr:
+      ip: "0.0.0.0" ## Expose Prometheus metrics on all interfaces.
+      port: 9091 ## Prometheus metrics listening port.
 ---
 

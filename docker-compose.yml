@@ -1,4 +1,5 @@
 services:
+  ## APISIX Key/Value Storage
   etcd:
     image: bitnami/etcd:latest
     container_name: etcd
@@ -11,6 +12,7 @@ services:
     volumes:
       - ./.data/etcd:/bitnami/etcd
 
+  ## APISIX Redis Storage for Rate Limiting
   redis:
     image: redis:latest
     container_name: redis
@@ -19,6 +21,7 @@ services:
     volumes:
       - ./.data/redis:/data
 
+  ## APISIX API Gateway
   apisix:
     image: apache/apisix:3.12.0-debian
     container_name: apisix
@@ -27,12 +30,13 @@ services:
       - redis
     volumes:
       - ./api.config.yaml:/usr/local/apisix/conf/config.yaml
-      - ./api.apisix.yaml:/usr/local/apisix/conf/apisix.yaml
     ports:
       - "9080:9080" # HTTP
       - "9180:9180" # Admin API
+      - "9091:9091" # Prometheus Metrics
     restart: always
 
+  ## APISIX Dashboard
   apisix-dashboard:
     image: apache/apisix-dashboard:3.0.1-alpine
     container_name: apisix-dashboard
@@ -42,6 +46,15 @@ services:
       - ./dashboard.config.yaml:/usr/local/apisix-dashboard/conf/conf.yaml
     depends_on:
       - apisix
+
+  ## APISIX Prometheus Metrics
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
 
   ## Sample Service
   httpbin:
