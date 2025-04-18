@@ -43,7 +43,13 @@ We’ll start by routing requests to the `httpbin` upstream.
 
 **Via UI**
 
-<TODO>
+![](./docs//dashboard_upstream_create.png)
+
+![](./docs/dashboard_route_create_1.png)
+
+![](./docs/dashboard_route_create_2.png)
+
+![](./docs/dashboard_route_create_3.png)
 
 **Via Admin API**
 
@@ -68,7 +74,7 @@ curl http://127.0.0.1:9180/apisix/admin/routes/1 -H "X-API-KEY: $ADMIN_KEY" -X P
 
 **Via ACD**
 
-<TODO>
+TBC
 
 **Testing**
 Test the Route
@@ -76,10 +82,7 @@ Test the Route
 ```shell
 curl http://localhost:9080/httpbin/ip  -i
 HTTP/1.1 200 OK
-
-{
-  "origin": "192.168.65.1"
-}
+{ "origin": "192.168.65.1" }
 ```
 
 ### API Key Auth + Rate Limiting
@@ -145,7 +148,7 @@ Let's create two consumers, one for each consumer group/plan leveraging `key-aut
 
 **Via UI**
 
-<TODO>
+Not possible with plugins/group_id
 
 **Via Admin API**
 
@@ -177,7 +180,7 @@ curl http://127.0.0.1:9180/apisix/admin/consumers -H "X-API-KEY: $ADMIN_KEY" -X 
 
 **Via ACD**
 
-<TODO>
+TBC
 
 #### Update the Route
 
@@ -209,23 +212,18 @@ Try reaching out the service through the API Gateway
 ```shell
 curl http://localhost:9080/httpbin/ip  -i
 HTTP/1.1 401 Unauthorized
-
 {"message":"Missing API key in request"}
 ```
 
 ```shell
 curl http://localhost:9080/httpbin/ip  -i -H 'apikey: apikey1'
 HTTP/1.1 200 OK
-
-{
-  "origin": "192.168.65.1"
-}
+{"origin": "192.168.65.1"}
 ```
 
 ```shell
-sandbox curl http://localhost:9080/httpbin/ip  -i -H 'apikey: apikey1'
+curl http://localhost:9080/httpbin/ip  -i -H 'apikey: apikey1'
 HTTP/1.1 429 Too Many Requests
-
 <html>
 <head><title>429 Too Many Requests</title></head>
 <body>
@@ -235,13 +233,13 @@ HTTP/1.1 429 Too Many Requests
 </html>
 ```
 
-### CConfigure API Authentication with Long-Lived Rate Limits
+### Configure API Authentication with Long-Lived Rate Limits
 
 We'll now enforce monthly quotas using `limit-count` (https://apisix.apache.org/docs/apisix/plugins/limit-count/)
 
 **Via UI**
 
-No possible
+Not possible
 
 **Via Admin API**
 
@@ -297,7 +295,7 @@ curl http://127.0.0.1:9180/apisix/admin/consumer_groups/premium_plan -H "X-API-K
 
 **Via ACD**
 
-<TODO>
+TBC
 
 **Testing**
 Try out to reach the service through the API Gateway
@@ -305,10 +303,7 @@ Try out to reach the service through the API Gateway
 ```shell
 curl http://localhost:9080/httpbin/ip  -i -H 'apikey: apikey1'
 HTTP/1.1 200 OK
-
-{
-  "origin": "192.168.65.1"
-}
+{"origin": "192.168.65.1"}
 ```
 
 After exceeding monthly quota (x10):
@@ -316,7 +311,6 @@ After exceeding monthly quota (x10):
 ```shell
 sandbox curl http://localhost:9080/httpbin/ip  -i -H 'apikey: apikey1'
 HTTP/1.1 429 Too Many Requests
-
 <html>
 <head><title>429 Too Many Requests</title></head>
 <body>
