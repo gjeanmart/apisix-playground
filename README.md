@@ -1,6 +1,6 @@
-## APISIX Exploration
+# APISIX Exploration
 
-### Requirements
+## Requirements
 
 - Docker
 - Docker Compose
@@ -9,7 +9,7 @@
   curl -sL "https://run.api7.ai/adc/install" | sh
   ```
 
-### Getting started
+## Getting started
 
 1. **Start the Services**
 
@@ -37,7 +37,7 @@ Find the Admin API key in `api.config.yaml` under `deployment.admin.admin_key`, 
 export ADMIN_KEY=adminkey
 ```
 
-#### Configure Upstream and route
+### Configure Upstream and route
 
 We’ll start by routing requests to the `httpbin` upstream.
 
@@ -82,7 +82,7 @@ HTTP/1.1 200 OK
 }
 ```
 
-#### API Key Auth + Rate Limiting
+### API Key Auth + Rate Limiting
 
 We’ll now enable API key-based authentication and configure rate limits based on consumer groups: `basic` and `premium`.
 
@@ -91,7 +91,7 @@ We will be using the following plugins
 - `key-auth`: https://apisix.apache.org/docs/apisix/plugins/key-auth/
 - `limit-req`: https://apisix.apache.org/docs/apisix/plugins/limit-req/
 
-##### Consumer groups
+#### Consumer groups
 
 First we create Consumer Groups for each plan (basic and premium) using the plugin `limit-req`
 
@@ -139,7 +139,7 @@ curl http://127.0.0.1:9180/apisix/admin/consumer_groups/premium_plan -H "X-API-K
 
 <TODO>
 
-##### Consumers
+#### Consumers
 
 Let's create two consumers, one for each consumer group/plan leveraging `key-auth` plugin
 
@@ -179,7 +179,7 @@ curl http://127.0.0.1:9180/apisix/admin/consumers -H "X-API-KEY: $ADMIN_KEY" -X 
 
 <TODO>
 
-##### Update the route
+#### Update the Route
 
 Finally, let's update Route to enable Auth
 
@@ -235,7 +235,7 @@ HTTP/1.1 429 Too Many Requests
 </html>
 ```
 
-#### CConfigure API Authentication with Long-Lived Rate Limits
+### CConfigure API Authentication with Long-Lived Rate Limits
 
 We'll now enforce monthly quotas using `limit-count` (https://apisix.apache.org/docs/apisix/plugins/limit-count/)
 
