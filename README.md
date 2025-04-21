@@ -38,6 +38,8 @@ Find the Admin API key in `api.config.yaml` under `deployment.admin.admin_key`, 
 export ADMIN_KEY=adminkey
 ```
 
+## Configure Upstream and Route
+
 ### Enable necessary plugins
 
 In your APISIX config (`api.config.yaml`), enable the following plugins:
@@ -47,7 +49,7 @@ plugins:
   - proxy-rewrite
 ```
 
-## Configure Upstream and route
+### Create Upstream and Route
 
 We’ll start by routing requests to the `httpbin` upstream.
 
@@ -204,28 +206,17 @@ $ curl http://127.0.0.1:9180/apisix/admin/consumers -H "X-API-KEY: $ADMIN_KEY" -
 
 _To Be Defined_
 
-### Update the Route
+### Configure the Global rules
 
-Finally, let's update Route to enable Auth
+Finally, let's configure `key-auth` globally with a global rule:
 
 ```shell
-$ curl http://127.0.0.1:9180/apisix/admin/routes/1 -H "X-API-KEY: $ADMIN_KEY" -X PUT -i -d '
-{
-    "name": "httbin-route",
-    "uri": "/httpbin/*",
-    "upstream": {
-        "type": "roundrobin",
-        "nodes": {
-            "httpbin:80": 1
+$ curl http://127.0.0.1:9180/apisix/admin/global_rules/1 -H "X-API-KEY: $ADMIN_KEY" -X PUT -i -d '
+   {
+        "plugins": {
+            "key-auth": {}
         }
-    },
-    "plugins": {
-        "proxy-rewrite": {
-            "regex_uri": ["/httpbin/(.*)", "/$1"]
-        },
-        "key-auth": {}
-    }
-}'
+    }'
 ```
 
 **Testing**
@@ -395,29 +386,18 @@ scrape_configs:
       - targets: ["apisix:9091"]
 ```
 
-### Update the Route
+### Update the Global Rule
 
-Finally, update a route to enable the Prometheus plugin:
+Finally, update our global rule to enable the Prometheus plugin:
 
 ```shell
-$ curl http://127.0.0.1:9180/apisix/admin/routes/1 -H "X-API-KEY: $ADMIN_KEY" -X PUT -i -d '
-{
-    "name": "httbin-route",
-    "uri": "/httpbin/*",
-    "upstream": {
-        "type": "roundrobin",
-        "nodes": {
-            "httpbin:80": 1
+$ curl http://127.0.0.1:9180/apisix/admin/global_rules/1 -H "X-API-KEY: $ADMIN_KEY" -X PUT -i -d '
+   {
+        "plugins": {
+            "key-auth": {},
+            "prometheus": {}
         }
-    },
-    "plugins": {
-        "proxy-rewrite": {
-            "regex_uri": ["/httpbin/(.*)", "/$1"]
-        },
-        "key-auth": {},
-        "prometheus": {}
-    }
-}'
+    }'
 ```
 
 ### Result
