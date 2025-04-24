@@ -27,6 +27,7 @@ This will start:
 - `httpbin` Sample HTTP service
 - `redis` Used for rate limiting with persistence
 - `prometheus` Used for metrics collection
+- `grafana` Used for testing metrics-based dashboard
 
 ➡️ Access the dashboard at: http://localhost:9000 (admin/admin)
 
@@ -301,15 +302,15 @@ $ curl http://127.0.0.1:9180/apisix/admin/consumer_groups/premium_plan -H "X-API
 {
     "plugins": {
         "limit-req": {
-            "rate": 10,
+            "rate": 10,             // 10 request per second
             "burst": 0,
-            "key": "consumer_name",
+            "key": "consumer_name", // restricted by consumer/api-key
             "rejected_code": 429
         },
         "limit-count": {
-            "count": 10000,
-            "time_window": 2592000, # 1 month
-            "key": "consumer_name", # restrict by consumer/api-key
+            "count": 10000,         // 10k request
+            "time_window": 2592000, // per month
+            "key": "consumer_name", // restricted by consumer/api-key
             "policy": "redis",
             "redis_host": "redis",
             "redis_port": 6379,
@@ -422,3 +423,46 @@ apisix_bandwidth{type="egress",route="1",...} 4433
 apisix_http_latency_bucket{type="request",route="1",...} 13
 ...
 ```
+
+### Configure Grafana
+
+Examples of queries:
+
+- Total successful requests
+
+```promql
+round(
+  sum(
+    increase(apisix_http_status
+      {consumer="$consumer", code="200", request_uri!=""}
+      [$__range]
+    )
+  )
+)
+```
+
+- Total successful requests per endpoint
+
+```promql
+round(
+  sum by (request_uri) (
+    increase(apisix_http_status
+      {consumer="$consumer", code="200", request_uri!=""}
+      [$__range])
+  )
+)
+```
+
+- Total requests per status
+
+```promql
+round(
+  sum by (code) (
+    increase(apisix_http_status
+      {consumer="$consumer", request_uri!=""}
+      [$__range])
+  )
+)
+```
+
+![](./docs/grafana.png)

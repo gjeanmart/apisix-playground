@@ -1,3 +1,4 @@
+## docker-compose.yml
 services:
   ## APISIX Key/Value Storage
   etcd:
@@ -55,6 +56,18 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  ## Grafana server to visualize APISIX metrics
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - 3000:3000
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./.data/grafana:/var/lib/grafana
 
   ## Sample Service
   httpbin:

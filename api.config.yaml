@@ -44,5 +44,12 @@ plugin_attr:
     export_addr:
       ip: "0.0.0.0" ## Expose Prometheus metrics on all interfaces.
       port: 9091 ## Prometheus metrics listening port.
+    metrics:
+      http_status:
+        extra_labels:
+          - request_uri: $request_uri
+      http_requests_total:
+        extra_labels:
+          - request_uri: $request_uri
 ---
 
